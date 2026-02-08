@@ -40,6 +40,7 @@
                     <p class="text-sm text-gray-600">
                         출발: <span class="font-bold text-sky-700">인천 (ICN)</span> · 
                         업데이트: <span id="last-updated" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">-</span>
+                        · 기준시점: <span id="base-at" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">-</span>
                         · 조회: <span id="loaded-at" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">-</span>
                     </p>
                 </div>
@@ -117,6 +118,8 @@
 
                 allData = data;
                 document.getElementById('last-updated').innerText = data.updatedAt || '알 수 없음';
+                const baseDate = (data.updatedAt || '').slice(0, 10);
+                document.getElementById('base-at').innerText = baseDate ? `${baseDate} 09:00 KST` : '알 수 없음';
                 document.getElementById('loaded-at').innerText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
                 
                 renderRoutes();
