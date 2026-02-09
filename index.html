@@ -113,7 +113,14 @@
             try {
                 const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
                 if (!res.ok) throw new Error("데이터 파일 없음");
-                const data = await res.json();
+                let data = await res.json();
+
+                if (data.updatedAt) {
+                    const vres = await fetch('data.json?v=' + encodeURIComponent(data.updatedAt), { cache: 'no-store' });
+                    if (vres.ok) {
+                        data = await vres.json();
+                    }
+                }
 
                 allData = data;
                 const baseDate = (data.updatedAt || '').slice(0, 10);
