@@ -145,7 +145,7 @@
             const emptyState = document.getElementById('empty-state');
             container.innerHTML = '';
 
-            const routes = allData.routes || {};
+            const routes = allData.routes || allData.results || {};
             let visibleCount = 0;
 
             Object.entries(routes).forEach(([route, dates]) => {
