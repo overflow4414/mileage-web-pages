@@ -62,7 +62,6 @@
                         <option value="LAX">로스앤젤레스 (LAX)</option>
                         <option value="SFO">샌프란시스코 (SFO)</option>
                         <option value="LAS">라스베가스 (LAS)</option>
-                        <option value="LHR">런던 히드로 (LHR)</option>
                         <option value="FRA">프랑크푸르트 (FRA)</option>
                         <option value="CDG">파리 샤를드골 (CDG)</option>
                     </select>
@@ -113,14 +112,7 @@
             try {
                 const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
                 if (!res.ok) throw new Error("데이터 파일 없음");
-                let data = await res.json();
-
-                if (data.updatedAt) {
-                    const vres = await fetch('data.json?v=' + encodeURIComponent(data.updatedAt), { cache: 'no-store' });
-                    if (vres.ok) {
-                        data = await vres.json();
-                    }
-                }
+                const data = await res.json();
 
                 allData = data;
                 const baseDate = (data.updatedAt || '').slice(0, 10);
@@ -145,7 +137,7 @@
             const emptyState = document.getElementById('empty-state');
             container.innerHTML = '';
 
-            const routes = allData.routes || allData.results || {};
+            const routes = allData.routes || {};
             let visibleCount = 0;
 
             Object.entries(routes).forEach(([route, dates]) => {
@@ -199,7 +191,6 @@
                 'LAX': '로스앤젤레스',
                 'SFO': '샌프란시스코',
                 'LAS': '라스베가스',
-                'LHR': '런던',
                 'FRA': '프랑크푸르트',
                 'CDG': '파리'
             };
