@@ -3,273 +3,687 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KE 마일리지 스캐너</title>
+    <title>KE 마일리지 좌석 검색</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .available { @apply bg-green-100 text-green-800 border-green-200; }
-        .waitlist { @apply bg-yellow-50 text-yellow-600 border-yellow-100; }
-        .none { @apply text-gray-300 bg-gray-50; }
+        :root {
+            --ke-blue: #00256c;
+            --ke-sky: #0066b3;
+        }
         
-        /* Smooth transitions */
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Glass effect */
+        .glass {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        /* Route card hover */
         .route-card {
             transition: all 0.2s ease;
         }
         .route-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
         }
         
-        /* Filter pills */
-        .filter-pill {
-            @apply px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all;
+        /* Date cell */
+        .date-cell {
+            transition: all 0.15s ease;
         }
-        .filter-pill.active {
-            @apply ring-2 ring-offset-2;
+        .date-cell:hover {
+            transform: scale(1.08);
+            z-index: 10;
+        }
+        
+        /* Region tabs */
+        .region-tab {
+            transition: all 0.2s ease;
+        }
+        .region-tab.active {
+            background: linear-gradient(135deg, #0066b3, #00256c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 102, 179, 0.4);
+        }
+        
+        /* Class badge colors */
+        .badge-first { background: linear-gradient(135deg, #9333ea, #7c3aed); }
+        .badge-business { background: linear-gradient(135deg, #059669, #10b981); }
+        .badge-economy { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .badge-premium { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        
+        /* Calendar view */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: default;
+            transition: all 0.15s ease;
+        }
+        .calendar-day.available {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #22c55e;
+        }
+        .calendar-day.available:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .calendar-day.unavailable {
+            background: #f8fafc;
+            color: #94a3b8;
+        }
+        .calendar-day.header {
+            font-weight: 600;
+            color: #64748b;
+            background: transparent;
+        }
+        .calendar-day.sunday { color: #ef4444; }
+        .calendar-day.saturday { color: #3b82f6; }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .calendar-grid { gap: 2px; }
+            .calendar-day { font-size: 0.75rem; }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-sky-50 via-white to-blue-50 text-gray-900 font-sans min-h-screen">
-    <div class="max-w-6xl mx-auto p-4 md:p-8">
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-sky-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        
         <!-- Header -->
-        <header class="mb-8 pb-6 border-b-2 border-sky-200">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <header class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-sky-900 mb-2">
-                        ✈️ 대한항공 마일리지 스캐너
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <span class="text-3xl">✈️</span>
+                        <span>KE 마일리지 좌석 검색</span>
                     </h1>
-                    <p class="text-sm text-gray-600">
-                        출발: <span class="font-bold text-sky-700">인천 (ICN)</span> · 
-                        기준시점: <span id="base-at" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">-</span>
-                        · 조회: <span id="loaded-at" class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">-</span>
+                    <p class="text-sm text-slate-500 mt-2">
+                        출발: <span class="font-semibold text-sky-700">인천 (ICN)</span> · 
+                        업데이트: <span id="updated-at" class="font-mono text-xs bg-slate-100 px-2 py-1 rounded">-</span>
                     </p>
                 </div>
-                <a href="https://www.koreanair.com/booking/book-and-manage/award-seat-availability" 
-                   target="_blank" 
-                   class="text-sm bg-sky-600 text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 transition shadow-sm hover:shadow-md whitespace-nowrap">
-                    대한항공 예약 →
-                </a>
+                <div class="flex gap-2">
+                    <button id="view-toggle" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition flex items-center gap-2">
+                        <span id="view-icon">📅</span>
+                        <span id="view-text">캘린더 보기</span>
+                    </button>
+                    <a href="https://www.koreanair.com/booking/book-and-manage/award-seat-availability" 
+                       target="_blank" 
+                       class="px-4 py-2 rounded-lg bg-gradient-to-r from-sky-600 to-blue-700 text-white hover:from-sky-700 hover:to-blue-800 text-sm font-medium shadow-lg shadow-sky-200 transition">
+                        대한항공 예약 →
+                    </a>
+                </div>
             </div>
         </header>
-
+        
         <!-- Filters -->
-        <div class="mb-6 p-5 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Destination Filter -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">도착지 선택</label>
-                    <select id="dest-filter" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent bg-white text-gray-900">
-                        <option value="all">전체 노선</option>
-                        <option value="LAX">로스앤젤레스 (LAX)</option>
-                        <option value="SFO">샌프란시스코 (SFO)</option>
-                        <option value="LAS">라스베가스 (LAS)</option>
-                        <option value="FRA">프랑크푸르트 (FRA)</option>
-                        <option value="CDG">파리 샤를드골 (CDG)</option>
-                    </select>
+        <div class="glass rounded-2xl shadow-lg border border-white/50 p-4 md:p-6 mb-6">
+            
+            <!-- Region Tabs -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-3">지역 선택</label>
+                <div class="flex flex-wrap gap-2" id="region-tabs">
+                    <button data-region="all" class="region-tab active px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🌍 전체
+                    </button>
+                    <button data-region="asia" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🌏 아시아
+                    </button>
+                    <button data-region="americas" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🌎 미주
+                    </button>
+                    <button data-region="europe" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🇪🇺 유럽
+                    </button>
+                    <button data-region="oceania" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🦘 오세아니아
+                    </button>
+                    <button data-region="resort" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                        🏝️ 휴양지
+                    </button>
                 </div>
-
-                <!-- Class Filter -->
+            </div>
+            
+            <!-- Class Filter + Destination -->
+            <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">클래스</label>
-                    <div class="flex gap-2 flex-wrap">
-                        <button data-class="all" class="filter-pill active bg-gray-100 text-gray-700 ring-gray-300">전체</button>
-                        <button data-class="first" class="filter-pill bg-purple-50 text-purple-700 hover:bg-purple-100">퍼스트</button>
-                        <button data-class="business" class="filter-pill bg-emerald-50 text-emerald-700 hover:bg-emerald-100">프레스티지</button>
-                        <button data-class="economy" class="filter-pill bg-blue-50 text-blue-600 hover:bg-blue-100">일반석</button>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">클래스</label>
+                    <div class="flex flex-wrap gap-2" id="class-filters">
+                        <button data-class="all" class="class-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-slate-800 text-white">전체</button>
+                        <button data-class="first" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200">퍼스트</button>
+                        <button data-class="business" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200">프레스티지</button>
+                        <button data-class="economy" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">일반석</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">도착지 검색</label>
+                    <div class="relative">
+                        <input type="text" id="dest-search" placeholder="도시명 또는 공항코드 (예: 도쿄, LAX)" 
+                               class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Loading State -->
+        
+        <!-- Stats Bar -->
+        <div class="flex flex-wrap items-center gap-4 mb-6 text-sm">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span id="stat-routes" class="font-semibold text-slate-700">0</span>
+                <span class="text-slate-500">노선</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                <span id="stat-dates" class="font-semibold text-slate-700">0</span>
+                <span class="text-slate-500">가능일</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse-soft"></span>
+                <span id="stat-first" class="font-semibold text-slate-700">0</span>
+                <span class="text-slate-500">퍼스트</span>
+            </div>
+        </div>
+        
+        <!-- Loading -->
         <div id="loading" class="text-center py-20">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-sky-200 border-t-sky-600 mb-4"></div>
-            <p class="text-gray-500">데이터 불러오는 중...</p>
+            <p class="text-slate-500">데이터 불러오는 중...</p>
         </div>
-
-        <!-- Content -->
-        <div id="content" class="space-y-6 hidden"></div>
-
+        
+        <!-- Content: Card View -->
+        <div id="content-cards" class="grid gap-4 md:gap-6 hidden"></div>
+        
+        <!-- Content: Calendar View -->
+        <div id="content-calendar" class="hidden">
+            <div id="calendar-dest-select" class="mb-6">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">노선 선택</label>
+                <select id="calendar-route" class="w-full md:w-auto px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-sky-500 text-sm">
+                    <option value="">노선을 선택하세요</option>
+                </select>
+            </div>
+            <div id="calendar-grid-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+        
         <!-- Empty State -->
         <div id="empty-state" class="hidden text-center py-20">
             <div class="text-6xl mb-4">😔</div>
-            <p class="text-gray-500 text-lg">선택한 조건에 맞는 좌석이 없습니다</p>
+            <p class="text-slate-500 text-lg">선택한 조건에 맞는 좌석이 없습니다</p>
+            <p class="text-slate-400 text-sm mt-2">다른 지역이나 클래스를 선택해보세요</p>
         </div>
-
+        
         <!-- Footer -->
-        <footer class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>💡 이 데이터는 자동으로 수집되며 참고용입니다. 정확한 정보는 대한항공 공식 사이트에서 확인하세요.</p>
-            <p class="mt-2">Made with ❤️ · <a href="https://github.com/overflow4414/mileage-web" target="_blank" class="text-sky-600 hover:underline">GitHub</a></p>
+        <footer class="mt-12 pt-6 border-t border-slate-200 text-center text-sm text-slate-500">
+            <p>💡 데이터는 자동으로 수집되며 참고용입니다. 정확한 정보는 대한항공에서 확인하세요.</p>
+            <p class="mt-2">
+                Made with ❤️ · 
+                <a href="https://github.com/overflow4414/mileage-web" target="_blank" class="text-sky-600 hover:underline">GitHub</a>
+            </p>
         </footer>
     </div>
 
     <script>
+        // ============================================
+        // Data & State
+        // ============================================
         let allData = {};
-        let currentDestFilter = 'all';
-        let currentClassFilter = 'all';
+        let currentView = 'cards'; // 'cards' or 'calendar'
+        let filters = {
+            region: 'all',
+            class: 'all',
+            search: ''
+        };
 
-        // Load data
-        async function loadData() {
-            try {
-                const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
-                if (!res.ok) throw new Error("데이터 파일 없음");
-                const data = await res.json();
+        // Region mapping
+        const REGIONS = {
+            asia: ['NRT', 'HND', 'KIX', 'FUK', 'NGO', 'CTS', 'OKA', 'TPE', 'HKG', 'BKK', 'SGN', 'SIN', 'MNL', 'KUL', 'PNH', 'HAN'],
+            americas: ['LAX', 'SFO', 'JFK', 'SEA', 'LAS', 'IAD', 'ORD', 'DFW', 'ATL', 'HNL', 'YVR', 'YYZ'],
+            europe: ['CDG', 'FRA', 'LHR', 'FCO', 'BCN', 'MAD', 'AMS', 'ZRH', 'VIE', 'PRG', 'IST'],
+            oceania: ['SYD', 'MEL', 'BNE', 'AKL'],
+            resort: ['HNL', 'GUM', 'SPN', 'DPS', 'CEB', 'DAD', 'OKA']
+        };
 
-                allData = data;
-                const baseDate = (data.updatedAt || '').slice(0, 10);
-                document.getElementById('base-at').innerText = baseDate ? `${baseDate} 09:00 KST` : '알 수 없음';
-                document.getElementById('loaded-at').innerText = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-                
-                renderRoutes();
-                
-                document.getElementById('loading').classList.add('hidden');
+        // Airport names
+        const AIRPORT_NAMES = {
+            // Americas
+            'LAX': '로스앤젤레스', 'SFO': '샌프란시스코', 'JFK': '뉴욕', 'SEA': '시애틀',
+            'LAS': '라스베가스', 'IAD': '워싱턴DC', 'ORD': '시카고', 'DFW': '댈러스',
+            'ATL': '애틀랜타', 'HNL': '호놀룰루', 'YVR': '밴쿠버', 'YYZ': '토론토',
+            // Europe
+            'CDG': '파리', 'FRA': '프랑크푸르트', 'LHR': '런던', 'FCO': '로마',
+            'BCN': '바르셀로나', 'MAD': '마드리드', 'AMS': '암스테르담', 'ZRH': '취리히',
+            'VIE': '빈', 'PRG': '프라하', 'IST': '이스탄불',
+            // Asia
+            'NRT': '도쿄(나리타)', 'HND': '도쿄(하네다)', 'KIX': '오사카', 'FUK': '후쿠오카',
+            'NGO': '나고야', 'CTS': '삿포로', 'OKA': '오키나와', 'TPE': '타이베이',
+            'HKG': '홍콩', 'BKK': '방콕', 'SGN': '호치민', 'SIN': '싱가포르',
+            'MNL': '마닐라', 'CEB': '세부', 'DPS': '발리', 'KUL': '쿠알라룸푸르',
+            'PNH': '프놈펜', 'HAN': '하노이', 'DAD': '다낭',
+            // Oceania
+            'SYD': '시드니', 'MEL': '멜버른', 'BNE': '브리즈번', 'AKL': '오클랜드',
+            // Others
+            'GUM': '괌', 'SPN': '사이판'
+        };
 
-            } catch (e) {
-                document.getElementById('loading').innerHTML = `
-                    <p class="text-red-500 text-lg">데이터 로드 실패 😢</p>
-                    <p class="text-sm mt-2 text-gray-400">${e.message}</p>
-                `;
-            }
+        // ============================================
+        // Helpers
+        // ============================================
+        function getAirportName(code) {
+            return AIRPORT_NAMES[code] || code;
         }
 
-        // Render routes based on filters
-        function renderRoutes() {
-            const container = document.getElementById('content');
+        function getDestCode(route) {
+            return route.split('-')[1];
+        }
+
+        function matchesRegion(destCode, region) {
+            if (region === 'all') return true;
+            return REGIONS[region]?.includes(destCode) || false;
+        }
+
+        function matchesClass(classes, classFilter) {
+            if (classFilter === 'all') return true;
+            return classes.some(c => c === classFilter || (classFilter === 'business' && c === 'prestige'));
+        }
+
+        function matchesSearch(route, search) {
+            if (!search) return true;
+            const dest = getDestCode(route);
+            const name = getAirportName(dest).toLowerCase();
+            const searchLower = search.toLowerCase();
+            return dest.toLowerCase().includes(searchLower) || name.includes(searchLower);
+        }
+
+        function getClassBadge(classType) {
+            const badges = {
+                'first': { label: '퍼스트', class: 'badge-first' },
+                'business': { label: '프레스티지', class: 'badge-business' },
+                'prestige': { label: '프레스티지', class: 'badge-business' },
+                'economy': { label: '일반석', class: 'badge-economy' },
+                'premium_economy': { label: '프리미엄', class: 'badge-premium' }
+            };
+            return badges[classType] || { label: classType, class: 'bg-slate-500' };
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            return {
+                month: d.getMonth() + 1,
+                day: d.getDate(),
+                dayName: days[d.getDay()],
+                isWeekend: d.getDay() === 0 || d.getDay() === 6,
+                isSunday: d.getDay() === 0,
+                isSaturday: d.getDay() === 6
+            };
+        }
+
+        // ============================================
+        // Render Functions
+        // ============================================
+        function renderCardView() {
+            const container = document.getElementById('content-cards');
             const emptyState = document.getElementById('empty-state');
             container.innerHTML = '';
 
             const routes = allData.routes || {};
-            let visibleCount = 0;
+            const filteredRoutes = [];
 
             Object.entries(routes).forEach(([route, dates]) => {
-                const [origin, dest] = route.split('-');
+                const dest = getDestCode(route);
+                
+                // Apply filters
+                if (!matchesRegion(dest, filters.region)) return;
+                if (!matchesSearch(route, filters.search)) return;
 
-                // Apply destination filter
-                if (currentDestFilter !== 'all' && dest !== currentDestFilter) {
-                    return;
-                }
-
-                // Apply class filter
+                // Filter dates by class
                 let filteredDates = {};
                 Object.entries(dates).forEach(([dateStr, classes]) => {
-                    if (currentClassFilter === 'all') {
+                    if (matchesClass(classes, filters.class)) {
                         filteredDates[dateStr] = classes;
-                    } else {
-                        const matchesClass = classes.some(c => {
-                            if (currentClassFilter === 'first') return c.includes('first');
-                            if (currentClassFilter === 'business') return c.includes('business') || c.includes('prestige');
-                            if (currentClassFilter === 'economy') return c.includes('economy');
-                            return false;
-                        });
-                        if (matchesClass) {
-                            filteredDates[dateStr] = classes;
-                        }
                     }
                 });
 
                 if (Object.keys(filteredDates).length === 0) return;
 
-                visibleCount++;
-                const section = createRouteCard(origin, dest, filteredDates);
-                container.appendChild(section);
+                filteredRoutes.push({ route, dest, dates: filteredDates });
             });
 
-            if (visibleCount === 0) {
+            // Sort by date count (most available first)
+            filteredRoutes.sort((a, b) => Object.keys(b.dates).length - Object.keys(a.dates).length);
+
+            if (filteredRoutes.length === 0) {
                 container.classList.add('hidden');
                 emptyState.classList.remove('hidden');
             } else {
                 container.classList.remove('hidden');
                 emptyState.classList.add('hidden');
+
+                filteredRoutes.forEach(({ route, dest, dates }) => {
+                    container.appendChild(createRouteCard(route, dest, dates));
+                });
+            }
+
+            updateStats(filteredRoutes);
+        }
+
+        function createRouteCard(route, dest, dates) {
+            const card = document.createElement('div');
+            card.className = 'route-card glass rounded-2xl shadow-lg border border-white/50 p-5 animate-fade-in';
+
+            const sortedDates = Object.keys(dates).sort();
+            const hasFirst = Object.values(dates).some(c => c.includes('first'));
+            const hasBusiness = Object.values(dates).some(c => c.includes('business') || c.includes('prestige'));
+
+            // Find best class for highlight
+            let highlight = '';
+            if (hasFirst) highlight = 'border-l-4 border-l-purple-500';
+            else if (hasBusiness) highlight = 'border-l-4 border-l-emerald-500';
+            else highlight = 'border-l-4 border-l-blue-500';
+
+            card.className += ` ${highlight}`;
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="text-3xl font-bold text-slate-300">ICN</div>
+                        <svg class="w-6 h-6 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                        <div>
+                            <div class="text-2xl font-bold text-sky-700">${dest}</div>
+                            <div class="text-sm text-slate-500">${getAirportName(dest)}</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="text-2xl font-bold text-slate-700">${sortedDates.length}</span>
+                        <span class="text-xs text-slate-500">가능일</span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    ${hasFirst ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-first">퍼스트</span>' : ''}
+                    ${hasBusiness ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-business">프레스티지</span>' : ''}
+                    ${!hasFirst && !hasBusiness ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-economy">일반석</span>' : ''}
+                </div>
+                
+                <div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                    ${sortedDates.slice(0, 20).map(dateStr => {
+                        const classes = dates[dateStr];
+                        const { month, day, dayName, isSunday, isSaturday } = formatDate(dateStr);
+                        const isFirst = classes.includes('first');
+                        const isBusiness = classes.includes('business') || classes.includes('prestige');
+                        
+                        let bgClass = 'bg-blue-50 border-blue-200';
+                        if (isFirst) bgClass = 'bg-purple-50 border-purple-200';
+                        else if (isBusiness) bgClass = 'bg-emerald-50 border-emerald-200';
+                        
+                        let textClass = 'text-slate-700';
+                        if (isSunday) textClass = 'text-red-500';
+                        else if (isSaturday) textClass = 'text-blue-500';
+                        
+                        return `
+                            <div class="date-cell flex flex-col items-center p-2 rounded-lg border-2 ${bgClass} cursor-default" 
+                                 title="${classes.join(', ')}">
+                                <span class="text-[10px] text-slate-400">${dayName}</span>
+                                <span class="text-sm font-bold ${textClass}">${month}/${day}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                    ${sortedDates.length > 20 ? `
+                        <div class="flex items-center justify-center p-2 text-sm text-slate-400">
+                            +${sortedDates.length - 20}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function renderCalendarView() {
+            const container = document.getElementById('calendar-grid-container');
+            const select = document.getElementById('calendar-route');
+            
+            // Populate route selector
+            const routes = allData.routes || {};
+            const filteredRoutes = Object.keys(routes).filter(route => {
+                const dest = getDestCode(route);
+                return matchesRegion(dest, filters.region) && matchesSearch(route, filters.search);
+            }).sort();
+
+            select.innerHTML = '<option value="">노선을 선택하세요</option>' +
+                filteredRoutes.map(route => {
+                    const dest = getDestCode(route);
+                    const dateCount = Object.keys(routes[route]).length;
+                    return `<option value="${route}">${dest} ${getAirportName(dest)} (${dateCount}일)</option>`;
+                }).join('');
+
+            if (!select.value && filteredRoutes.length > 0) {
+                select.value = filteredRoutes[0];
+            }
+
+            renderCalendarForRoute(select.value);
+        }
+
+        function renderCalendarForRoute(route) {
+            const container = document.getElementById('calendar-grid-container');
+            container.innerHTML = '';
+
+            if (!route || !allData.routes?.[route]) {
+                container.innerHTML = '<p class="text-slate-500 col-span-full text-center py-10">노선을 선택하세요</p>';
+                return;
+            }
+
+            const dates = allData.routes[route];
+            const availableDates = new Set(Object.keys(dates));
+
+            // Get month range (current to +11 months)
+            const now = new Date();
+            const months = [];
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+                months.push({ year: d.getFullYear(), month: d.getMonth() });
+            }
+
+            months.forEach(({ year, month }) => {
+                const monthCard = document.createElement('div');
+                monthCard.className = 'glass rounded-xl p-4 border border-white/50 animate-fade-in';
+
+                const monthName = `${year}년 ${month + 1}월`;
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                let calendarHTML = `
+                    <h3 class="text-lg font-bold text-slate-700 mb-3">${monthName}</h3>
+                    <div class="calendar-grid">
+                        <div class="calendar-day header sunday">일</div>
+                        <div class="calendar-day header">월</div>
+                        <div class="calendar-day header">화</div>
+                        <div class="calendar-day header">수</div>
+                        <div class="calendar-day header">목</div>
+                        <div class="calendar-day header">금</div>
+                        <div class="calendar-day header saturday">토</div>
+                `;
+
+                // Empty cells for first week
+                for (let i = 0; i < firstDay; i++) {
+                    calendarHTML += '<div class="calendar-day"></div>';
+                }
+
+                // Days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const isAvailable = availableDates.has(dateStr);
+                    const classes = dates[dateStr] || [];
+                    const dayOfWeek = new Date(year, month, day).getDay();
+                    
+                    let dayClass = isAvailable ? 'available' : 'unavailable';
+                    if (dayOfWeek === 0) dayClass += ' sunday';
+                    if (dayOfWeek === 6) dayClass += ' saturday';
+
+                    let indicator = '';
+                    if (isAvailable) {
+                        if (classes.includes('first')) {
+                            indicator = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>';
+                        } else if (classes.includes('business') || classes.includes('prestige')) {
+                            indicator = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>';
+                        }
+                    }
+
+                    calendarHTML += `
+                        <div class="calendar-day ${dayClass}" title="${isAvailable ? classes.join(', ') : '좌석 없음'}">
+                            <span>${day}</span>
+                            ${indicator}
+                        </div>
+                    `;
+                }
+
+                calendarHTML += '</div>';
+                monthCard.innerHTML = calendarHTML;
+                container.appendChild(monthCard);
+            });
+        }
+
+        function updateStats(filteredRoutes) {
+            const totalRoutes = filteredRoutes.length;
+            let totalDates = 0;
+            let firstCount = 0;
+
+            filteredRoutes.forEach(({ dates }) => {
+                totalDates += Object.keys(dates).length;
+                Object.values(dates).forEach(classes => {
+                    if (classes.includes('first')) firstCount++;
+                });
+            });
+
+            document.getElementById('stat-routes').textContent = totalRoutes;
+            document.getElementById('stat-dates').textContent = totalDates;
+            document.getElementById('stat-first').textContent = firstCount;
+        }
+
+        function render() {
+            if (currentView === 'cards') {
+                document.getElementById('content-cards').classList.remove('hidden');
+                document.getElementById('content-calendar').classList.add('hidden');
+                renderCardView();
+            } else {
+                document.getElementById('content-cards').classList.add('hidden');
+                document.getElementById('content-calendar').classList.remove('hidden');
+                renderCalendarView();
             }
         }
 
-        // Create route card
-        function createRouteCard(origin, dest, dates) {
-            const section = document.createElement('div');
-            section.className = 'route-card bg-white rounded-xl shadow-sm p-6 border border-gray-100';
-
-            const destNames = {
-                'LAX': '로스앤젤레스',
-                'SFO': '샌프란시스코',
-                'LAS': '라스베가스',
-                'FRA': '프랑크푸르트',
-                'CDG': '파리'
-            };
-
-            let html = `
-                <div class="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
-                    <div class="flex items-center gap-3">
-                        <span class="text-2xl font-bold text-gray-800">${origin}</span>
-                        <svg class="w-6 h-6 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                        <div>
-                            <span class="text-2xl font-bold text-sky-700">${dest}</span>
-                            <span class="block text-xs text-gray-500 mt-0.5">${destNames[dest] || dest}</span>
-                        </div>
-                    </div>
-                    <span class="text-sm font-semibold bg-sky-50 text-sky-700 px-3 py-1.5 rounded-full">
-                        ${Object.keys(dates).length}일 가능
-                    </span>
-                </div>
-                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3">
-            `;
-
-            const sortedDates = Object.keys(dates).sort();
-
-            sortedDates.forEach(dateStr => {
-                const classes = dates[dateStr];
-                const isPrestige = classes.some(c => c.includes('business') || c.includes('prestige'));
-                const isFirst = classes.some(c => c.includes('first'));
-
-                let colorClass = 'bg-blue-50 border-blue-200 text-blue-700';
-                let badge = 'Eco';
-                let ringClass = '';
-
-                if (isFirst) {
-                    colorClass = 'bg-purple-50 border-purple-200 text-purple-700';
-                    badge = '퍼스트';
-                    ringClass = 'ring-2 ring-purple-200';
-                } else if (isPrestige) {
-                    colorClass = 'bg-emerald-50 border-emerald-200 text-emerald-700';
-                    badge = '프레';
-                    ringClass = 'ring-2 ring-emerald-200';
-                }
-
-                const d = new Date(dateStr);
-                const dayName = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
-                const shortDate = `${d.getMonth() + 1}/${d.getDate()}`;
-
-                html += `
-                    <div class="flex flex-col items-center p-3 rounded-lg border-2 ${colorClass} ${ringClass} text-center transition-all hover:scale-105 cursor-default shadow-sm hover:shadow-md"
-                         title="${classes.join(', ')}">
-                        <span class="text-xs opacity-70 font-medium">${dayName}</span>
-                        <span class="font-bold text-lg leading-tight my-1">${shortDate}</span>
-                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/60">${badge}</span>
-                    </div>
-                `;
+        // ============================================
+        // Event Handlers
+        // ============================================
+        function setupEventListeners() {
+            // View toggle
+            document.getElementById('view-toggle').addEventListener('click', () => {
+                currentView = currentView === 'cards' ? 'calendar' : 'cards';
+                document.getElementById('view-icon').textContent = currentView === 'cards' ? '📅' : '📋';
+                document.getElementById('view-text').textContent = currentView === 'cards' ? '캘린더 보기' : '카드 보기';
+                render();
             });
 
-            html += `</div>`;
-            section.innerHTML = html;
-            return section;
+            // Region tabs
+            document.querySelectorAll('.region-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.region-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filters.region = e.target.dataset.region;
+                    render();
+                });
+            });
+
+            // Class filters
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.class-btn').forEach(b => {
+                        b.classList.remove('active', 'bg-slate-800', 'text-white');
+                    });
+                    e.target.classList.add('active', 'bg-slate-800', 'text-white');
+                    filters.class = e.target.dataset.class;
+                    render();
+                });
+            });
+
+            // Search
+            let searchTimeout;
+            document.getElementById('dest-search').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filters.search = e.target.value;
+                    render();
+                }, 300);
+            });
+
+            // Calendar route select
+            document.getElementById('calendar-route').addEventListener('change', (e) => {
+                renderCalendarForRoute(e.target.value);
+            });
         }
 
-        // Event listeners
-        document.getElementById('dest-filter').addEventListener('change', (e) => {
-            currentDestFilter = e.target.value;
-            renderRoutes();
-        });
+        // ============================================
+        // Load Data
+        // ============================================
+        async function loadData() {
+            try {
+                const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('데이터 파일 없음');
+                
+                allData = await res.json();
+                
+                const updatedAt = allData.updatedAt || '알 수 없음';
+                document.getElementById('updated-at').textContent = updatedAt;
+                
+                document.getElementById('loading').classList.add('hidden');
+                render();
 
-        document.querySelectorAll('.filter-pill').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentClassFilter = e.target.dataset.class;
-                renderRoutes();
-            });
-        });
+            } catch (e) {
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-red-500 text-lg mb-2">데이터 로드 실패 😢</div>
+                    <p class="text-sm text-slate-400">${e.message}</p>
+                `;
+            }
+        }
 
+        // ============================================
         // Initialize
+        // ============================================
+        setupEventListeners();
         loadData();
     </script>
 </body>
