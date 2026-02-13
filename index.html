@@ -439,8 +439,8 @@
                     ${!hasFirst && !hasBusiness ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-economy">일반석</span>' : ''}
                 </div>
                 
-                <div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10 gap-2">
-                    ${sortedDates.slice(0, 20).map(dateStr => {
+                <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 gap-1">
+                    ${sortedDates.map(dateStr => {
                         const classes = dates[dateStr];
                         const { month, day, dayName, isSunday, isSaturday } = formatDate(dateStr);
                         const isFirst = classes.includes('first');
@@ -455,18 +455,13 @@
                         else if (isSaturday) textClass = 'text-blue-500';
                         
                         return `
-                            <div class="date-cell flex flex-col items-center p-2 rounded-lg border-2 ${bgClass} cursor-default" 
-                                 title="${classes.join(', ')}">
-                                <span class="text-[10px] text-slate-400">${dayName}</span>
-                                <span class="text-sm font-bold ${textClass}">${month}/${day}</span>
+                            <div class="date-cell flex flex-col items-center p-1.5 rounded-lg border ${bgClass} cursor-default" 
+                                 title="${dateStr} - ${classes.join(', ')}">
+                                <span class="text-[9px] text-slate-400">${dayName}</span>
+                                <span class="text-xs font-bold ${textClass}">${month}/${day}</span>
                             </div>
                         `;
                     }).join('')}
-                    ${sortedDates.length > 20 ? `
-                        <div class="flex items-center justify-center p-2 text-sm text-slate-400">
-                            +${sortedDates.length - 20}
-                        </div>
-                    ` : ''}
                 </div>
             `;
 
