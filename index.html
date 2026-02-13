@@ -318,6 +318,26 @@
             return classes.some(c => c === classFilter || (classFilter === 'business' && c === 'prestige'));
         }
 
+        // Open KE booking page
+        function openBooking(route, dateStr, classLabel) {
+            const [origin, dest] = route.split('-');
+            const destName = getAirportName(dest);
+            const dateObj = new Date(dateStr);
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth() + 1;
+            const day = dateObj.getDate();
+            const monthStr = `${year}년 ${month}월`;
+            
+            const message = `${destName}(${dest}) ${month}/${day} ${classLabel} 예약 페이지로 이동하시겠습니까?`;
+            
+            if (confirm(message)) {
+                // KE 마일리지 좌석 검색 URL
+                // Note: KE site doesn't support direct date link, so we go to the main award page
+                const keUrl = 'https://www.koreanair.com/booking/best-awards';
+                window.open(keUrl, '_blank');
+            }
+        }
+
         function matchesSearch(route, search) {
             if (!search) return true;
             const dest = getDestCode(route);
@@ -446,17 +466,20 @@
                         const isFirst = classes.includes('first');
                         const isBusiness = classes.includes('business') || classes.includes('prestige');
                         
-                        let bgClass = 'bg-blue-50 border-blue-200';
-                        if (isFirst) bgClass = 'bg-purple-50 border-purple-200';
-                        else if (isBusiness) bgClass = 'bg-emerald-50 border-emerald-200';
+                        let bgClass = 'bg-blue-50 border-blue-200 hover:bg-blue-100';
+                        if (isFirst) bgClass = 'bg-purple-50 border-purple-200 hover:bg-purple-100';
+                        else if (isBusiness) bgClass = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100';
                         
                         let textClass = 'text-slate-700';
                         if (isSunday) textClass = 'text-red-500';
                         else if (isSaturday) textClass = 'text-blue-500';
                         
+                        const classLabel = isFirst ? '퍼스트' : (isBusiness ? '프레스티지' : '일반석');
+                        
                         return `
-                            <div class="date-cell flex flex-col items-center p-1.5 rounded-lg border ${bgClass} cursor-default" 
-                                 title="${dateStr} - ${classes.join(', ')}">
+                            <div class="date-cell flex flex-col items-center p-1.5 rounded-lg border ${bgClass} cursor-pointer transition-all hover:scale-105" 
+                                 title="${dateStr} - ${classes.join(', ')}"
+                                 onclick="openBooking('${route}', '${dateStr}', '${classLabel}')">
                                 <span class="text-[9px] text-slate-400">${dayName}</span>
                                 <span class="text-xs font-bold ${textClass}">${month}/${day}</span>
                             </div>
