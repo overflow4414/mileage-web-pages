@@ -3,679 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KE 마일리지 좌석 검색</title>
+    <title>KE 마일리지 승급 스캐너</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --ke-blue: #00256c;
             --ke-sky: #0066b3;
+            --ke-mint: #0f9f8f;
         }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Glass effect */
-        .glass {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.85);
+
+        body {
+            background:
+                linear-gradient(135deg, rgba(0, 37, 108, 0.06), rgba(15, 159, 143, 0.08)),
+                #f8fafc;
         }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .surface {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        @keyframes pulse-soft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .animate-pulse-soft {
-            animation: pulse-soft 2s ease-in-out infinite;
-        }
-        
-        /* Route card hover */
+
         .route-card {
-            transition: all 0.2s ease;
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
         }
+
         .route-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
         }
-        
-        /* Date cell */
-        .date-cell {
-            transition: all 0.15s ease;
+
+        .filter-pill {
+            transition: background 0.16s ease, color 0.16s ease, border 0.16s ease;
         }
-        .date-cell:hover {
-            transform: scale(1.08);
-            z-index: 10;
-        }
-        
-        /* Region tabs */
-        .region-tab {
-            transition: all 0.2s ease;
-        }
-        .region-tab.active {
-            background: linear-gradient(135deg, #0066b3, #00256c);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 102, 179, 0.4);
-        }
-        
-        /* Class badge colors */
-        .badge-first { background: linear-gradient(135deg, #9333ea, #7c3aed); }
-        .badge-business { background: linear-gradient(135deg, #059669, #10b981); }
-        .badge-economy { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-        .badge-premium { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        
-        /* Calendar view */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            cursor: default;
-            transition: all 0.15s ease;
-        }
-        .calendar-day.available {
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-            border: 2px solid #22c55e;
-        }
-        .calendar-day.available:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-        }
-        .calendar-day.unavailable {
-            background: #f8fafc;
-            color: #94a3b8;
-        }
-        .calendar-day.header {
-            font-weight: 600;
-            color: #64748b;
-            background: transparent;
-        }
-        .calendar-day.sunday { color: #ef4444; }
-        .calendar-day.saturday { color: #3b82f6; }
-        
-        /* Responsive */
-        @media (max-width: 640px) {
-            .calendar-grid { gap: 2px; }
-            .calendar-day { font-size: 0.75rem; }
+
+        .filter-pill.active {
+            background: var(--ke-blue);
+            border-color: var(--ke-blue);
+            color: #fff;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-sky-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
-        
-        <!-- Header -->
+<body class="text-slate-900 min-h-screen">
+    <main class="max-w-6xl mx-auto px-4 py-6 md:px-8 md:py-10">
         <header class="mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800 flex items-center gap-3">
-                        <span class="text-3xl">✈️</span>
-                        <span>KE 마일리지 좌석 검색</span>
-                    </h1>
-                    <p class="text-sm text-slate-500 mt-2">
-                        출발: <span class="font-semibold text-sky-700">인천 (ICN)</span> · 
-                        업데이트: <span id="updated-at" class="font-mono text-xs bg-slate-100 px-2 py-1 rounded">-</span>
+                    <p class="text-sm font-semibold tracking-wide text-sky-700">ICN 출발 구매와 동시 승급</p>
+                    <h1 class="mt-2 text-3xl md:text-4xl font-bold text-slate-950">대한항공 일반석 -> 프레스티지 승급</h1>
+                    <p class="mt-3 text-sm text-slate-600">
+                        업데이트:
+                        <span id="last-updated" class="font-mono text-xs bg-white border border-slate-200 px-2 py-1 rounded">-</span>
                     </p>
                 </div>
-                <div class="flex gap-2">
-                    <button id="view-toggle" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition flex items-center gap-2">
-                        <span id="view-icon">📅</span>
-                        <span id="view-text">캘린더 보기</span>
-                    </button>
-                    <a href="https://www.koreanair.com/booking/book-and-manage/award-seat-availability" 
-                       target="_blank" 
-                       class="px-4 py-2 rounded-lg bg-gradient-to-r from-sky-600 to-blue-700 text-white hover:from-sky-700 hover:to-blue-800 text-sm font-medium shadow-lg shadow-sky-200 transition">
-                        대한항공 예약 →
-                    </a>
-                </div>
+                <a href="https://www.koreanair.com/booking/search?bookingType=R&gnb=true"
+                   target="_blank"
+                   class="inline-flex items-center justify-center rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-800">
+                    대한항공 예매 열기
+                </a>
             </div>
         </header>
-        
-        <!-- Filters -->
-        <div class="glass rounded-2xl shadow-lg border border-white/50 p-4 md:p-6 mb-6">
-            
-            <!-- Region Tabs -->
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-slate-700 mb-3">지역 선택</label>
-                <div class="flex flex-wrap gap-2" id="region-tabs">
-                    <button data-region="all" class="region-tab active px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                        🌍 전체
-                    </button>
-                    <button data-region="americas" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                        🌎 미주
-                    </button>
-                    <button data-region="europe" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                        🇪🇺 유럽
-                    </button>
-                    <button data-region="oceania" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                        🦘 오세아니아
-                    </button>
-                    <button data-region="resort" class="region-tab px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                        🏝️ 휴양지
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Class Filter + Destination -->
-            <div class="grid md:grid-cols-2 gap-4">
+
+        <section class="surface rounded-xl p-4 md:p-5 mb-6">
+            <div class="grid gap-4 md:grid-cols-[minmax(220px,320px),1fr] md:items-end">
+                <label class="block">
+                    <span class="block text-sm font-semibold text-slate-700 mb-2">도착지</span>
+                    <select id="dest-filter" class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-100">
+                        <option value="all">전체 노선</option>
+                        <option value="LAX">로스앤젤레스 (LAX)</option>
+                        <option value="JFK">뉴욕 JFK (JFK)</option>
+                        <option value="SFO">샌프란시스코 (SFO)</option>
+                        <option value="SEA">시애틀 (SEA)</option>
+                        <option value="IAD">워싱턴 D.C. (IAD)</option>
+                    </select>
+                </label>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">클래스</label>
-                    <div class="flex flex-wrap gap-2" id="class-filters">
-                        <button data-class="all" class="class-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-slate-800 text-white">전체</button>
-                        <button data-class="first" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200">퍼스트</button>
-                        <button data-class="business" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200">프레스티지</button>
-                        <button data-class="economy" class="class-btn px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">일반석</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">도착지 검색</label>
-                    <div class="relative">
-                        <input type="text" id="dest-search" placeholder="도시명 또는 공항코드 (예: 도쿄, LAX)" 
-                               class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                    <span class="block text-sm font-semibold text-slate-700 mb-2">표시</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-class="all" class="filter-pill active rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">전체</button>
+                        <button type="button" data-class="upgrade" class="filter-pill rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">승급 가능</button>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Stats Bar -->
-        <div class="flex flex-wrap items-center gap-4 mb-6 text-sm">
-            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span id="stat-routes" class="font-semibold text-slate-700">0</span>
-                <span class="text-slate-500">노선</span>
+        </section>
+
+        <section class="grid gap-3 sm:grid-cols-3 mb-6">
+            <div class="surface rounded-xl p-4">
+                <div class="text-xs font-semibold text-slate-500">노선</div>
+                <div id="stat-routes" class="mt-1 text-2xl font-bold text-slate-950">0</div>
             </div>
-            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-                <span id="stat-dates" class="font-semibold text-slate-700">0</span>
-                <span class="text-slate-500">가능일</span>
+            <div class="surface rounded-xl p-4">
+                <div class="text-xs font-semibold text-slate-500">승급 가능일</div>
+                <div id="stat-dates" class="mt-1 text-2xl font-bold text-slate-950">0</div>
             </div>
-            <div class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse-soft"></span>
-                <span id="stat-first" class="font-semibold text-slate-700">0</span>
-                <span class="text-slate-500">퍼스트</span>
+            <div class="surface rounded-xl p-4">
+                <div class="text-xs font-semibold text-slate-500">승급 유형</div>
+                <div class="mt-1 text-lg font-bold text-slate-950">일반석 -> 프레스티지</div>
             </div>
+        </section>
+
+        <div id="loading" class="surface rounded-xl py-16 text-center">
+            <div class="mx-auto mb-4 h-11 w-11 animate-spin rounded-full border-4 border-sky-100 border-t-sky-700"></div>
+            <p class="text-sm text-slate-500">데이터 불러오는 중...</p>
         </div>
-        
-        <!-- Loading -->
-        <div id="loading" class="text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-sky-200 border-t-sky-600 mb-4"></div>
-            <p class="text-slate-500">데이터 불러오는 중...</p>
+
+        <div id="content" class="hidden space-y-5"></div>
+
+        <div id="empty-state" class="surface hidden rounded-xl py-16 px-4 text-center">
+            <p class="text-lg font-semibold text-slate-800">선택한 조건에 맞는 승급 가능일이 없습니다</p>
+            <p class="mt-2 text-sm text-slate-500">좌석 상황은 계속 바뀌므로 다음 자동 스캔 때 다시 갱신됩니다.</p>
         </div>
-        
-        <!-- Content: Card View -->
-        <div id="content-cards" class="grid gap-4 md:gap-6 hidden"></div>
-        
-        <!-- Content: Calendar View -->
-        <div id="content-calendar" class="hidden">
-            <div id="calendar-dest-select" class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">노선 선택</label>
-                <select id="calendar-route" class="w-full md:w-auto px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-sky-500 text-sm">
-                    <option value="">노선을 선택하세요</option>
-                </select>
-            </div>
-            <div id="calendar-grid-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
-        
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden text-center py-20">
-            <div class="text-6xl mb-4">😔</div>
-            <p class="text-slate-500 text-lg">선택한 조건에 맞는 좌석이 없습니다</p>
-            <p class="text-slate-400 text-sm mt-2">다른 지역이나 클래스를 선택해보세요</p>
-        </div>
-        
-        <!-- Footer -->
-        <footer class="mt-12 pt-6 border-t border-slate-200 text-center text-sm text-slate-500">
-            <p>💡 데이터는 자동으로 수집되며 참고용입니다. 정확한 정보는 대한항공에서 확인하세요.</p>
-            <p class="mt-2">
-                Made with ❤️ · 
-                <a href="https://github.com/overflow4414/mileage-web" target="_blank" class="text-sky-600 hover:underline">GitHub</a>
-            </p>
+
+        <footer class="mt-10 border-t border-slate-200 pt-5 text-center text-sm text-slate-500">
+            <p>자동 수집 데이터이며 참고용입니다. 예약 전 대한항공 공식 사이트에서 최종 확인하세요.</p>
+            <p class="mt-2"><a href="https://github.com/overflow4414/mileage-web-pages" target="_blank" class="font-semibold text-sky-700 hover:underline">GitHub Pages repository</a></p>
         </footer>
-    </div>
+    </main>
 
     <script>
-        // ============================================
-        // Data & State
-        // ============================================
         let allData = {};
-        let currentView = 'cards'; // 'cards' or 'calendar'
-        let filters = {
-            region: 'all',
-            class: 'all',
-            search: ''
+        let currentDestFilter = 'all';
+        let currentClassFilter = 'all';
+
+        const DEST_NAMES = {
+            LAX: '로스앤젤레스',
+            JFK: '뉴욕 JFK',
+            SFO: '샌프란시스코',
+            SEA: '시애틀',
+            IAD: '워싱턴 D.C.'
         };
 
-        // Region mapping
-        const REGIONS = {
-            asia: ['NRT', 'HND', 'KIX', 'FUK', 'NGO', 'CTS', 'OKA', 'TPE', 'HKG', 'BKK', 'SGN', 'SIN', 'MNL', 'KUL', 'PNH', 'HAN'],
-            americas: ['LAX', 'SFO', 'JFK', 'SEA', 'LAS', 'IAD', 'ORD', 'DFW', 'ATL', 'HNL', 'YVR', 'YYZ'],
-            europe: ['CDG', 'FRA', 'LHR', 'FCO', 'BCN', 'MAD', 'AMS', 'ZRH', 'VIE', 'PRG', 'IST'],
-            oceania: ['SYD', 'MEL', 'BNE', 'AKL'],
-            resort: ['HNL', 'SPN', 'DPS', 'CEB', 'DAD', 'OKA']
-        };
-
-        // Airport names
-        const AIRPORT_NAMES = {
-            // Americas
-            'LAX': '로스앤젤레스', 'SFO': '샌프란시스코', 'JFK': '뉴욕', 'SEA': '시애틀',
-            'LAS': '라스베가스', 'IAD': '워싱턴DC', 'ORD': '시카고', 'DFW': '댈러스',
-            'ATL': '애틀랜타', 'HNL': '호놀룰루', 'YVR': '밴쿠버', 'YYZ': '토론토',
-            // Europe
-            'CDG': '파리', 'FRA': '프랑크푸르트', 'LHR': '런던', 'FCO': '로마',
-            'BCN': '바르셀로나', 'MAD': '마드리드', 'AMS': '암스테르담', 'ZRH': '취리히',
-            'VIE': '빈', 'PRG': '프라하', 'IST': '이스탄불',
-            // Asia
-            'NRT': '도쿄(나리타)', 'HND': '도쿄(하네다)', 'KIX': '오사카', 'FUK': '후쿠오카',
-            'NGO': '나고야', 'CTS': '삿포로', 'OKA': '오키나와', 'TPE': '타이베이',
-            'HKG': '홍콩', 'BKK': '방콕', 'SGN': '호치민', 'SIN': '싱가포르',
-            'MNL': '마닐라', 'CEB': '세부', 'DPS': '발리', 'KUL': '쿠알라룸푸르',
-            'PNH': '프놈펜', 'HAN': '하노이', 'DAD': '다낭',
-            // Oceania
-            'SYD': '시드니', 'MEL': '멜버른', 'BNE': '브리즈번', 'AKL': '오클랜드',
-            // Others
-            'GUM': '괌', 'SPN': '사이판'
-        };
-
-        // ============================================
-        // Helpers
-        // ============================================
-        function getAirportName(code) {
-            return AIRPORT_NAMES[code] || code;
+        async function loadData() {
+            try {
+                const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('데이터 파일 없음');
+                allData = await res.json();
+                document.getElementById('last-updated').innerText = allData.updatedAt || '알 수 없음';
+                document.getElementById('loading').classList.add('hidden');
+                renderRoutes();
+            } catch (e) {
+                document.getElementById('loading').innerHTML = `
+                    <p class="text-lg font-semibold text-red-600">데이터 로드 실패</p>
+                    <p class="mt-2 text-sm text-slate-400">${e.message}</p>
+                `;
+            }
         }
 
-        function getDestCode(route) {
-            return route.split('-')[1];
-        }
-
-        function matchesRegion(destCode, region) {
-            if (region === 'all') return true;
-            return REGIONS[region]?.includes(destCode) || false;
-        }
-
-        function matchesClass(classes, classFilter) {
-            if (classFilter === 'all') return true;
-            return classes.some(c => c === classFilter || (classFilter === 'business' && c === 'prestige'));
-        }
-
-        function matchesSearch(route, search) {
-            if (!search) return true;
-            const dest = getDestCode(route);
-            const name = getAirportName(dest).toLowerCase();
-            const searchLower = search.toLowerCase();
-            return dest.toLowerCase().includes(searchLower) || name.includes(searchLower);
-        }
-
-        function getClassBadge(classType) {
-            const badges = {
-                'first': { label: '퍼스트', class: 'badge-first' },
-                'business': { label: '프레스티지', class: 'badge-business' },
-                'prestige': { label: '프레스티지', class: 'badge-business' },
-                'economy': { label: '일반석', class: 'badge-economy' },
-                'premium_economy': { label: '프리미엄', class: 'badge-premium' }
-            };
-            return badges[classType] || { label: classType, class: 'bg-slate-500' };
+        function isUpgradeClass(className) {
+            return className === 'economy_to_prestige' || className.includes('upgrade') || className.includes('prestige');
         }
 
         function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const d = new Date(`${dateStr}T00:00:00`);
+            const dayName = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
             return {
-                month: d.getMonth() + 1,
-                day: d.getDate(),
-                dayName: days[d.getDay()],
-                isWeekend: d.getDay() === 0 || d.getDay() === 6,
-                isSunday: d.getDay() === 0,
-                isSaturday: d.getDay() === 6
+                shortDate: `${d.getMonth() + 1}/${d.getDate()}`,
+                dayName,
+                weekend: d.getDay() === 0 || d.getDay() === 6
             };
         }
 
-        // ============================================
-        // Render Functions
-        // ============================================
-        function renderCardView() {
-            const container = document.getElementById('content-cards');
-            const emptyState = document.getElementById('empty-state');
-            container.innerHTML = '';
-
+        function filteredRouteEntries() {
             const routes = allData.routes || {};
-            const filteredRoutes = [];
+            const entries = [];
 
             Object.entries(routes).forEach(([route, dates]) => {
-                const dest = getDestCode(route);
-                
-                // Apply filters
-                if (!matchesRegion(dest, filters.region)) return;
-                if (!matchesSearch(route, filters.search)) return;
+                const [origin, dest] = route.split('-');
+                if (currentDestFilter !== 'all' && dest !== currentDestFilter) return;
 
-                // Filter dates by class
-                let filteredDates = {};
-                Object.entries(dates).forEach(([dateStr, classes]) => {
-                    if (matchesClass(classes, filters.class)) {
-                        filteredDates[dateStr] = classes;
+                const filteredDates = {};
+                Object.entries(dates || {}).forEach(([dateStr, classes]) => {
+                    const classList = Array.isArray(classes) ? classes : [];
+                    const hasUpgrade = classList.some(isUpgradeClass);
+                    if (currentClassFilter === 'all' || hasUpgrade) {
+                        filteredDates[dateStr] = classList;
                     }
                 });
 
-                if (Object.keys(filteredDates).length === 0) return;
-
-                filteredRoutes.push({ route, dest, dates: filteredDates });
+                if (Object.keys(filteredDates).length > 0) {
+                    entries.push({ origin, dest, route, dates: filteredDates });
+                }
             });
 
-            // Sort by date count (most available first)
-            filteredRoutes.sort((a, b) => Object.keys(b.dates).length - Object.keys(a.dates).length);
-
-            if (filteredRoutes.length === 0) {
-                container.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            } else {
-                container.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-
-                filteredRoutes.forEach(({ route, dest, dates }) => {
-                    container.appendChild(createRouteCard(route, dest, dates));
-                });
-            }
-
-            updateStats(filteredRoutes);
+            entries.sort((a, b) => Object.keys(b.dates).length - Object.keys(a.dates).length || a.dest.localeCompare(b.dest));
+            return entries;
         }
 
-        function createRouteCard(route, dest, dates) {
-            const card = document.createElement('div');
-            card.className = 'route-card glass rounded-2xl shadow-lg border border-white/50 p-5 animate-fade-in';
+        function renderRoutes() {
+            const container = document.getElementById('content');
+            const emptyState = document.getElementById('empty-state');
+            const entries = filteredRouteEntries();
 
+            container.innerHTML = '';
+            document.getElementById('stat-routes').textContent = entries.length;
+            document.getElementById('stat-dates').textContent = entries.reduce((sum, entry) => sum + Object.keys(entry.dates).length, 0);
+
+            if (entries.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            entries.forEach(entry => container.appendChild(createRouteCard(entry)));
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        function createRouteCard({ origin, dest, dates }) {
+            const section = document.createElement('section');
+            section.className = 'route-card surface rounded-xl p-5 md:p-6';
             const sortedDates = Object.keys(dates).sort();
-            const hasFirst = Object.values(dates).some(c => c.includes('first'));
-            const hasBusiness = Object.values(dates).some(c => c.includes('business') || c.includes('prestige'));
 
-            // Find best class for highlight
-            let highlight = '';
-            if (hasFirst) highlight = 'border-l-4 border-l-purple-500';
-            else if (hasBusiness) highlight = 'border-l-4 border-l-emerald-500';
-            else highlight = 'border-l-4 border-l-blue-500';
-
-            card.className += ` ${highlight}`;
-
-            card.innerHTML = `
-                <div class="flex items-center justify-between mb-4">
+            section.innerHTML = `
+                <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="text-3xl font-bold text-slate-300">ICN</div>
-                        <svg class="w-6 h-6 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
+                        <span class="text-2xl font-bold text-slate-800">${origin}</span>
+                        <span class="text-sky-700">-></span>
                         <div>
-                            <div class="text-2xl font-bold text-sky-700">${dest}</div>
-                            <div class="text-sm text-slate-500">${getAirportName(dest)}</div>
+                            <span class="block text-2xl font-bold text-sky-800">${dest}</span>
+                            <span class="text-xs text-slate-500">${DEST_NAMES[dest] || dest}</span>
                         </div>
                     </div>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="text-2xl font-bold text-slate-700">${sortedDates.length}</span>
-                        <span class="text-xs text-slate-500">가능일</span>
-                    </div>
+                    <span class="w-fit rounded-full bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800">${sortedDates.length}일 가능</span>
                 </div>
-                
-                <div class="flex flex-wrap gap-2 mb-4">
-                    ${hasFirst ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-first">퍼스트</span>' : ''}
-                    ${hasBusiness ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-business">프레스티지</span>' : ''}
-                    ${!hasFirst && !hasBusiness ? '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white badge-economy">일반석</span>' : ''}
-                </div>
-                
-                <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 gap-1">
+                <div class="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
                     ${sortedDates.map(dateStr => {
-                        const classes = dates[dateStr];
-                        const { month, day, dayName, isSunday, isSaturday } = formatDate(dateStr);
-                        const isFirst = classes.includes('first');
-                        const isBusiness = classes.includes('business') || classes.includes('prestige');
-                        
-                        let bgClass = 'bg-blue-50 border-blue-200';
-                        if (isFirst) bgClass = 'bg-purple-50 border-purple-200';
-                        else if (isBusiness) bgClass = 'bg-emerald-50 border-emerald-200';
-                        
-                        let textClass = 'text-slate-700';
-                        if (isSunday) textClass = 'text-red-500';
-                        else if (isSaturday) textClass = 'text-blue-500';
-                        
+                        const { shortDate, dayName, weekend } = formatDate(dateStr);
                         return `
-                            <div class="date-cell flex flex-col items-center p-1.5 rounded-lg border ${bgClass}" 
-                                 title="${dateStr} - ${classes.join(', ')}">
-                                <span class="text-[9px] text-slate-400">${dayName}</span>
-                                <span class="text-xs font-bold ${textClass}">${month}/${day}</span>
+                            <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center shadow-sm" title="${dateStr}">
+                                <span class="block text-xs font-semibold ${weekend ? 'text-slate-500' : 'text-slate-400'}">${dayName}</span>
+                                <span class="mt-1 block text-lg font-bold text-emerald-800">${shortDate}</span>
+                                <span class="mt-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-emerald-700">승급</span>
                             </div>
                         `;
                     }).join('')}
                 </div>
             `;
 
-            return card;
+            return section;
         }
 
-        function renderCalendarView() {
-            const container = document.getElementById('calendar-grid-container');
-            const select = document.getElementById('calendar-route');
-            
-            // Populate route selector
-            const routes = allData.routes || {};
-            const filteredRoutes = Object.keys(routes).filter(route => {
-                const dest = getDestCode(route);
-                return matchesRegion(dest, filters.region) && matchesSearch(route, filters.search);
-            }).sort();
+        document.getElementById('dest-filter').addEventListener('change', (e) => {
+            currentDestFilter = e.target.value;
+            renderRoutes();
+        });
 
-            select.innerHTML = '<option value="">노선을 선택하세요</option>' +
-                filteredRoutes.map(route => {
-                    const dest = getDestCode(route);
-                    const dateCount = Object.keys(routes[route]).length;
-                    return `<option value="${route}">${dest} ${getAirportName(dest)} (${dateCount}일)</option>`;
-                }).join('');
-
-            if (!select.value && filteredRoutes.length > 0) {
-                select.value = filteredRoutes[0];
-            }
-
-            renderCalendarForRoute(select.value);
-        }
-
-        function renderCalendarForRoute(route) {
-            const container = document.getElementById('calendar-grid-container');
-            container.innerHTML = '';
-
-            if (!route || !allData.routes?.[route]) {
-                container.innerHTML = '<p class="text-slate-500 col-span-full text-center py-10">노선을 선택하세요</p>';
-                return;
-            }
-
-            const dates = allData.routes[route];
-            const availableDates = new Set(Object.keys(dates));
-
-            // Get month range (current to +11 months)
-            const now = new Date();
-            const months = [];
-            for (let i = 0; i < 12; i++) {
-                const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-                months.push({ year: d.getFullYear(), month: d.getMonth() });
-            }
-
-            months.forEach(({ year, month }) => {
-                const monthCard = document.createElement('div');
-                monthCard.className = 'glass rounded-xl p-4 border border-white/50 animate-fade-in';
-
-                const monthName = `${year}년 ${month + 1}월`;
-                const firstDay = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-                let calendarHTML = `
-                    <h3 class="text-lg font-bold text-slate-700 mb-3">${monthName}</h3>
-                    <div class="calendar-grid">
-                        <div class="calendar-day header sunday">일</div>
-                        <div class="calendar-day header">월</div>
-                        <div class="calendar-day header">화</div>
-                        <div class="calendar-day header">수</div>
-                        <div class="calendar-day header">목</div>
-                        <div class="calendar-day header">금</div>
-                        <div class="calendar-day header saturday">토</div>
-                `;
-
-                // Empty cells for first week
-                for (let i = 0; i < firstDay; i++) {
-                    calendarHTML += '<div class="calendar-day"></div>';
-                }
-
-                // Days
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const isAvailable = availableDates.has(dateStr);
-                    const classes = dates[dateStr] || [];
-                    const dayOfWeek = new Date(year, month, day).getDay();
-                    
-                    let dayClass = isAvailable ? 'available' : 'unavailable';
-                    if (dayOfWeek === 0) dayClass += ' sunday';
-                    if (dayOfWeek === 6) dayClass += ' saturday';
-
-                    let indicator = '';
-                    if (isAvailable) {
-                        if (classes.includes('first')) {
-                            indicator = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>';
-                        } else if (classes.includes('business') || classes.includes('prestige')) {
-                            indicator = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>';
-                        }
-                    }
-
-                    calendarHTML += `
-                        <div class="calendar-day ${dayClass}" title="${isAvailable ? classes.join(', ') : '좌석 없음'}">
-                            <span>${day}</span>
-                            ${indicator}
-                        </div>
-                    `;
-                }
-
-                calendarHTML += '</div>';
-                monthCard.innerHTML = calendarHTML;
-                container.appendChild(monthCard);
+        document.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-pill').forEach(node => node.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentClassFilter = e.currentTarget.dataset.class;
+                renderRoutes();
             });
-        }
+        });
 
-        function updateStats(filteredRoutes) {
-            const totalRoutes = filteredRoutes.length;
-            let totalDates = 0;
-            let firstCount = 0;
-
-            filteredRoutes.forEach(({ dates }) => {
-                totalDates += Object.keys(dates).length;
-                Object.values(dates).forEach(classes => {
-                    if (classes.includes('first')) firstCount++;
-                });
-            });
-
-            document.getElementById('stat-routes').textContent = totalRoutes;
-            document.getElementById('stat-dates').textContent = totalDates;
-            document.getElementById('stat-first').textContent = firstCount;
-        }
-
-        function render() {
-            if (currentView === 'cards') {
-                document.getElementById('content-cards').classList.remove('hidden');
-                document.getElementById('content-calendar').classList.add('hidden');
-                renderCardView();
-            } else {
-                document.getElementById('content-cards').classList.add('hidden');
-                document.getElementById('content-calendar').classList.remove('hidden');
-                renderCalendarView();
-            }
-        }
-
-        // ============================================
-        // Event Handlers
-        // ============================================
-        function setupEventListeners() {
-            // View toggle
-            document.getElementById('view-toggle').addEventListener('click', () => {
-                currentView = currentView === 'cards' ? 'calendar' : 'cards';
-                document.getElementById('view-icon').textContent = currentView === 'cards' ? '📅' : '📋';
-                document.getElementById('view-text').textContent = currentView === 'cards' ? '캘린더 보기' : '카드 보기';
-                render();
-            });
-
-            // Region tabs
-            document.querySelectorAll('.region-tab').forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    document.querySelectorAll('.region-tab').forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                    filters.region = e.target.dataset.region;
-                    render();
-                });
-            });
-
-            // Class filters
-            document.querySelectorAll('.class-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.class-btn').forEach(b => {
-                        b.classList.remove('active', 'bg-slate-800', 'text-white');
-                    });
-                    e.target.classList.add('active', 'bg-slate-800', 'text-white');
-                    filters.class = e.target.dataset.class;
-                    render();
-                });
-            });
-
-            // Search
-            let searchTimeout;
-            document.getElementById('dest-search').addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    filters.search = e.target.value;
-                    render();
-                }, 300);
-            });
-
-            // Calendar route select
-            document.getElementById('calendar-route').addEventListener('change', (e) => {
-                renderCalendarForRoute(e.target.value);
-            });
-        }
-
-        // ============================================
-        // Load Data
-        // ============================================
-        async function loadData() {
-            try {
-                const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
-                if (!res.ok) throw new Error('데이터 파일 없음');
-                
-                allData = await res.json();
-                
-                const updatedAt = allData.updatedAt || '알 수 없음';
-                document.getElementById('updated-at').textContent = updatedAt;
-                
-                document.getElementById('loading').classList.add('hidden');
-                render();
-
-            } catch (e) {
-                document.getElementById('loading').innerHTML = `
-                    <div class="text-red-500 text-lg mb-2">데이터 로드 실패 😢</div>
-                    <p class="text-sm text-slate-400">${e.message}</p>
-                `;
-            }
-        }
-
-        // ============================================
-        // Initialize
-        // ============================================
-        setupEventListeners();
         loadData();
     </script>
 </body>
