@@ -1,7 +1,194 @@
 {
-  "updatedAt": "2026-05-14 09:12:28 KST",
+  "updatedAt": "2026-05-14 11:39:52 KST",
   "routes": {
-    "ICN-LAX": {
+    "ICN-CDG": {
+      "2026-05-15": [
+        "economy_to_prestige"
+      ],
+      "2026-05-16": [
+        "economy_to_prestige"
+      ],
+      "2026-05-17": [
+        "economy_to_prestige"
+      ],
+      "2026-05-18": [
+        "economy_to_prestige"
+      ],
+      "2026-05-19": [
+        "economy_to_prestige"
+      ],
+      "2026-05-20": [
+        "economy_to_prestige"
+      ],
+      "2026-05-21": [
+        "economy_to_prestige"
+      ],
+      "2026-05-22": [
+        "economy_to_prestige"
+      ],
+      "2026-05-23": [
+        "economy_to_prestige"
+      ],
+      "2026-05-24": [
+        "economy_to_prestige"
+      ],
+      "2026-05-25": [
+        "economy_to_prestige"
+      ],
+      "2026-05-26": [
+        "economy_to_prestige"
+      ],
+      "2026-05-27": [
+        "economy_to_prestige"
+      ],
+      "2026-05-28": [
+        "economy_to_prestige"
+      ],
+      "2026-05-29": [
+        "economy_to_prestige"
+      ],
+      "2026-05-30": [
+        "economy_to_prestige"
+      ],
+      "2026-05-31": [
+        "economy_to_prestige"
+      ],
+      "2026-06-01": [
+        "economy_to_prestige"
+      ],
+      "2026-06-02": [
+        "economy_to_prestige"
+      ],
+      "2026-06-03": [
+        "economy_to_prestige"
+      ],
+      "2026-06-04": [
+        "economy_to_prestige"
+      ],
+      "2026-06-05": [
+        "economy_to_prestige"
+      ],
+      "2026-06-06": [
+        "economy_to_prestige"
+      ],
+      "2026-06-07": [
+        "economy_to_prestige"
+      ],
+      "2026-06-08": [
+        "economy_to_prestige"
+      ],
+      "2026-06-09": [
+        "economy_to_prestige"
+      ],
+      "2026-06-10": [
+        "economy_to_prestige"
+      ],
+      "2026-06-11": [
+        "economy_to_prestige"
+      ],
+      "2026-06-12": [
+        "economy_to_prestige"
+      ],
+      "2026-06-14": [
+        "economy_to_prestige"
+      ],
+      "2026-06-15": [
+        "economy_to_prestige"
+      ],
+      "2026-06-16": [
+        "economy_to_prestige"
+      ],
+      "2026-06-17": [
+        "economy_to_prestige"
+      ],
+      "2026-06-18": [
+        "economy_to_prestige"
+      ],
+      "2026-06-19": [
+        "economy_to_prestige"
+      ],
+      "2026-06-21": [
+        "economy_to_prestige"
+      ],
+      "2026-06-22": [
+        "economy_to_prestige"
+      ],
+      "2026-06-23": [
+        "economy_to_prestige"
+      ],
+      "2026-06-24": [
+        "economy_to_prestige"
+      ],
+      "2026-06-25": [
+        "economy_to_prestige"
+      ],
+      "2026-06-26": [
+        "economy_to_prestige"
+      ],
+      "2026-06-28": [
+        "economy_to_prestige"
+      ]
+    },
+    "ICN-FRA": {
+      "2026-05-17": [
+        "economy_to_prestige"
+      ],
+      "2026-05-20": [
+        "economy_to_prestige"
+      ],
+      "2026-05-22": [
+        "economy_to_prestige"
+      ],
+      "2026-05-24": [
+        "economy_to_prestige"
+      ],
+      "2026-05-27": [
+        "economy_to_prestige"
+      ],
+      "2026-05-29": [
+        "economy_to_prestige"
+      ],
+      "2026-05-31": [
+        "economy_to_prestige"
+      ],
+      "2026-06-03": [
+        "economy_to_prestige"
+      ],
+      "2026-06-05": [
+        "economy_to_prestige"
+      ],
+      "2026-06-07": [
+        "economy_to_prestige"
+      ],
+      "2026-06-10": [
+        "economy_to_prestige"
+      ],
+      "2026-06-12": [
+        "economy_to_prestige"
+      ],
+      "2026-06-14": [
+        "economy_to_prestige"
+      ],
+      "2026-06-17": [
+        "economy_to_prestige"
+      ],
+      "2026-06-19": [
+        "economy_to_prestige"
+      ],
+      "2026-06-21": [
+        "economy_to_prestige"
+      ],
+      "2026-06-24": [
+        "economy_to_prestige"
+      ],
+      "2026-06-26": [
+        "economy_to_prestige"
+      ],
+      "2026-06-28": [
+        "economy_to_prestige"
+      ]
+    },
+    "ICN-SYD": {
       "2026-05-15": [
         "economy_to_prestige"
       ],
@@ -135,131 +322,6 @@
         "economy_to_prestige"
       ],
       "2026-06-28": [
-        "economy_to_prestige"
-      ]
-    },
-    "ICN-JFK": {
-      "2026-05-15": [
-        "economy_to_prestige"
-      ],
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
-      "2026-05-17": [
-        "economy_to_prestige"
-      ],
-      "2026-05-18": [
-        "economy_to_prestige"
-      ],
-      "2026-05-19": [
-        "economy_to_prestige"
-      ],
-      "2026-05-20": [
-        "economy_to_prestige"
-      ],
-      "2026-05-21": [
-        "economy_to_prestige"
-      ],
-      "2026-05-22": [
-        "economy_to_prestige"
-      ],
-      "2026-05-23": [
-        "economy_to_prestige"
-      ],
-      "2026-05-24": [
-        "economy_to_prestige"
-      ],
-      "2026-05-25": [
-        "economy_to_prestige"
-      ],
-      "2026-05-26": [
-        "economy_to_prestige"
-      ],
-      "2026-05-27": [
-        "economy_to_prestige"
-      ],
-      "2026-05-28": [
-        "economy_to_prestige"
-      ],
-      "2026-05-29": [
-        "economy_to_prestige"
-      ],
-      "2026-05-30": [
-        "economy_to_prestige"
-      ],
-      "2026-05-31": [
-        "economy_to_prestige"
-      ],
-      "2026-06-01": [
-        "economy_to_prestige"
-      ],
-      "2026-06-02": [
-        "economy_to_prestige"
-      ],
-      "2026-06-03": [
-        "economy_to_prestige"
-      ],
-      "2026-06-04": [
-        "economy_to_prestige"
-      ],
-      "2026-06-05": [
-        "economy_to_prestige"
-      ],
-      "2026-06-06": [
-        "economy_to_prestige"
-      ],
-      "2026-06-07": [
-        "economy_to_prestige"
-      ],
-      "2026-06-08": [
-        "economy_to_prestige"
-      ],
-      "2026-06-09": [
-        "economy_to_prestige"
-      ],
-      "2026-06-10": [
-        "economy_to_prestige"
-      ],
-      "2026-06-11": [
-        "economy_to_prestige"
-      ],
-      "2026-06-12": [
-        "economy_to_prestige"
-      ],
-      "2026-06-13": [
-        "economy_to_prestige"
-      ],
-      "2026-06-14": [
-        "economy_to_prestige"
-      ],
-      "2026-06-15": [
-        "economy_to_prestige"
-      ],
-      "2026-06-16": [
-        "economy_to_prestige"
-      ],
-      "2026-06-17": [
-        "economy_to_prestige"
-      ],
-      "2026-06-18": [
-        "economy_to_prestige"
-      ],
-      "2026-06-19": [
-        "economy_to_prestige"
-      ],
-      "2026-06-20": [
-        "economy_to_prestige"
-      ],
-      "2026-06-22": [
-        "economy_to_prestige"
-      ],
-      "2026-06-23": [
-        "economy_to_prestige"
-      ],
-      "2026-06-24": [
-        "economy_to_prestige"
-      ],
-      "2026-06-26": [
         "economy_to_prestige"
       ]
     },
@@ -400,144 +462,7 @@
         "economy_to_prestige"
       ]
     },
-    "ICN-SEA": {
-      "2026-05-15": [
-        "economy_to_prestige"
-      ],
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
-      "2026-05-17": [
-        "economy_to_prestige"
-      ],
-      "2026-05-18": [
-        "economy_to_prestige"
-      ],
-      "2026-05-19": [
-        "economy_to_prestige"
-      ],
-      "2026-05-20": [
-        "economy_to_prestige"
-      ],
-      "2026-05-21": [
-        "economy_to_prestige"
-      ],
-      "2026-05-22": [
-        "economy_to_prestige"
-      ],
-      "2026-05-23": [
-        "economy_to_prestige"
-      ],
-      "2026-05-24": [
-        "economy_to_prestige"
-      ],
-      "2026-05-25": [
-        "economy_to_prestige"
-      ],
-      "2026-05-26": [
-        "economy_to_prestige"
-      ],
-      "2026-05-27": [
-        "economy_to_prestige"
-      ],
-      "2026-05-28": [
-        "economy_to_prestige"
-      ],
-      "2026-05-29": [
-        "economy_to_prestige"
-      ],
-      "2026-05-30": [
-        "economy_to_prestige"
-      ],
-      "2026-05-31": [
-        "economy_to_prestige"
-      ],
-      "2026-06-01": [
-        "economy_to_prestige"
-      ],
-      "2026-06-02": [
-        "economy_to_prestige"
-      ],
-      "2026-06-03": [
-        "economy_to_prestige"
-      ],
-      "2026-06-04": [
-        "economy_to_prestige"
-      ],
-      "2026-06-05": [
-        "economy_to_prestige"
-      ],
-      "2026-06-06": [
-        "economy_to_prestige"
-      ],
-      "2026-06-07": [
-        "economy_to_prestige"
-      ],
-      "2026-06-08": [
-        "economy_to_prestige"
-      ],
-      "2026-06-09": [
-        "economy_to_prestige"
-      ],
-      "2026-06-10": [
-        "economy_to_prestige"
-      ],
-      "2026-06-11": [
-        "economy_to_prestige"
-      ],
-      "2026-06-12": [
-        "economy_to_prestige"
-      ],
-      "2026-06-13": [
-        "economy_to_prestige"
-      ],
-      "2026-06-14": [
-        "economy_to_prestige"
-      ],
-      "2026-06-15": [
-        "economy_to_prestige"
-      ],
-      "2026-06-16": [
-        "economy_to_prestige"
-      ],
-      "2026-06-17": [
-        "economy_to_prestige"
-      ],
-      "2026-06-18": [
-        "economy_to_prestige"
-      ],
-      "2026-06-19": [
-        "economy_to_prestige"
-      ],
-      "2026-06-20": [
-        "economy_to_prestige"
-      ],
-      "2026-06-21": [
-        "economy_to_prestige"
-      ],
-      "2026-06-22": [
-        "economy_to_prestige"
-      ],
-      "2026-06-23": [
-        "economy_to_prestige"
-      ],
-      "2026-06-24": [
-        "economy_to_prestige"
-      ],
-      "2026-06-25": [
-        "economy_to_prestige"
-      ],
-      "2026-06-26": [
-        "economy_to_prestige"
-      ],
-      "2026-06-27": [
-        "economy_to_prestige"
-      ],
-      "2026-06-28": [
-        "economy_to_prestige"
-      ]
-    },
-    "ICN-IAD": {
+    "ICN-LAS": {
       "2026-05-15": [
         "economy_to_prestige"
       ],
