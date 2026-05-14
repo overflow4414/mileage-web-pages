@@ -8,11 +8,11 @@ Pages 레포: https://github.com/overflow4414/mileage-web-pages
 ## 지원 범위
 
 - 승급 유형: 일반석 -> 프레스티지석
-- 기본 노선: LAX, JFK, SFO, SEA, IAD
+- 기본 노선: CDG, FRA, SYD, SFO, LAS
 - 기본 스캔 범위: 오늘부터 45일
 - 데이터 파일: `data.json`
 
-대한항공 승급 검색은 스카이패스 로그인이 살아 있어야 합니다. 세션이 만료되면 아래 명령으로 한 번 로그인 세션을 갱신해야 합니다.
+대한항공 승급 검색은 스카이패스 로그인이 살아 있어야 합니다. 스캐너는 예매 UI 결과 대신 대한항공 승급 좌석 API를 호출합니다. 세션이 만료되면 아래 명령으로 한 번 로그인 세션을 갱신해야 합니다.
 
 ```bash
 cd /Users/eunsungjo/clawd/projects/web-automation
@@ -31,7 +31,7 @@ cd /Users/eunsungjo/clawd/projects/mileage-web
 환경변수로 스캔 범위를 바꿀 수 있습니다.
 
 ```bash
-DAYS=90 ROUTES=ICN-LAX,ICN-JFK ./deploy_upgrade.sh
+DAYS=90 ROUTES=ICN-CDG,ICN-FRA,ICN-SYD ./deploy_upgrade.sh
 ```
 
 ## PM2 실행
@@ -42,7 +42,7 @@ pm2 start ecosystem.config.cjs
 pm2 save
 ```
 
-기본 설정은 매일 한국시간 오전 9시에 실행합니다. 대한항공이 headless 브라우저를 차단하는 경우가 있어 PM2 기본값은 `HEADLESS=false`입니다. 로그는 `/tmp/ke-mileage-upgrade-deploy.log`에 남습니다.
+기본 설정은 매일 한국시간 오전 9시에 실행합니다. PM2 기본값은 저장된 로그인 세션을 붙인 브라우저 컨텍스트에서 승급 좌석 API를 호출합니다. 로그는 `/tmp/ke-mileage-upgrade-deploy.log`에 남습니다.
 
 현재 상태 확인:
 
@@ -66,7 +66,7 @@ python3 -m http.server 8000
 {
   "updatedAt": "2026-05-12 09:00:00 KST",
   "routes": {
-    "ICN-LAX": {
+    "ICN-CDG": {
       "2026-06-13": ["economy_to_prestige"]
     }
   }

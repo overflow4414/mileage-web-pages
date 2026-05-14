@@ -70,11 +70,11 @@
                     <span class="block text-sm font-semibold text-slate-700 mb-2">도착지</span>
                     <select id="dest-filter" class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-100">
                         <option value="all">전체 노선</option>
-                        <option value="LAX">로스앤젤레스 (LAX)</option>
-                        <option value="JFK">뉴욕 JFK (JFK)</option>
+                        <option value="CDG">파리 (CDG)</option>
+                        <option value="FRA">프랑크푸르트 (FRA)</option>
+                        <option value="SYD">시드니 (SYD)</option>
                         <option value="SFO">샌프란시스코 (SFO)</option>
-                        <option value="SEA">시애틀 (SEA)</option>
-                        <option value="IAD">워싱턴 D.C. (IAD)</option>
+                        <option value="LAS">라스베가스 (LAS)</option>
                     </select>
                 </label>
                 <div>
@@ -126,11 +126,11 @@
         let currentClassFilter = 'all';
 
         const DEST_NAMES = {
-            LAX: '로스앤젤레스',
-            JFK: '뉴욕 JFK',
+            CDG: '파리',
+            FRA: '프랑크푸르트',
+            SYD: '시드니',
             SFO: '샌프란시스코',
-            SEA: '시애틀',
-            IAD: '워싱턴 D.C.'
+            LAS: '라스베가스'
         };
 
         async function loadData() {
