@@ -1,10 +1,7 @@
 {
-  "updatedAt": "2026-05-15 09:09:14 KST",
+  "updatedAt": "2026-05-16 09:12:57 KST",
   "routes": {
     "ICN-CDG": {
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
       "2026-05-17": [
         "economy_to_prestige"
       ],
@@ -83,6 +80,9 @@
       "2026-06-12": [
         "economy_to_prestige"
       ],
+      "2026-06-13": [
+        "economy_to_prestige"
+      ],
       "2026-06-14": [
         "economy_to_prestige"
       ],
@@ -119,10 +119,16 @@
       "2026-06-26": [
         "economy_to_prestige"
       ],
+      "2026-06-27": [
+        "economy_to_prestige"
+      ],
       "2026-06-28": [
         "economy_to_prestige"
       ],
       "2026-06-29": [
+        "economy_to_prestige"
+      ],
+      "2026-06-30": [
         "economy_to_prestige"
       ]
     },
@@ -186,9 +192,6 @@
       ]
     },
     "ICN-SYD": {
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
       "2026-05-17": [
         "economy_to_prestige"
       ],
@@ -319,13 +322,13 @@
         "economy_to_prestige"
       ],
       "2026-06-29": [
+        "economy_to_prestige"
+      ],
+      "2026-06-30": [
         "economy_to_prestige"
       ]
     },
     "ICN-SFO": {
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
       "2026-05-17": [
         "economy_to_prestige"
       ],
@@ -456,13 +459,13 @@
         "economy_to_prestige"
       ],
       "2026-06-29": [
+        "economy_to_prestige"
+      ],
+      "2026-06-30": [
         "economy_to_prestige"
       ]
     },
     "ICN-LAS": {
-      "2026-05-16": [
-        "economy_to_prestige"
-      ],
       "2026-05-17": [
         "economy_to_prestige"
       ],
@@ -593,6 +596,9 @@
         "economy_to_prestige"
       ],
       "2026-06-29": [
+        "economy_to_prestige"
+      ],
+      "2026-06-30": [
         "economy_to_prestige"
       ]
     }
